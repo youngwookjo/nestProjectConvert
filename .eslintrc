@@ -1,0 +1,39 @@
+{
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "prettier/@typescript-eslint",
+    "plugin:prettier/recommended",
+    "prettier"
+  ],
+  "env": {
+    // node.js에서 console과 같은 전역변수 사용 여부
+    "node": true,
+    "browser": true,
+    "es6": true
+  },
+  "ignorePatterns": ["node_modules/"],
+  "rules": {
+    "indent": ["error", 2],
+    "prettier/prettier": [
+      "error",
+      {
+        "endOfLine": "auto"
+      }
+    ]
+  },
+  "settings": {
+    "import/resolver": {
+      "typescript": {
+        "project": "./tsconfig.json"
+      },
+      "node": {
+        "paths": ["./src"],
+        "extensions": [".js", ".ts", ".tsx", ".json"]
+      }
+    }
+  }
+}

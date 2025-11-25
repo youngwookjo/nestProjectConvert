@@ -1,0 +1,21 @@
+# os
+.DS_Store
+
+# output
+node_modules
+/src/generated/prisma
+dist
+coverage
+
+# test
+uploads/
+public/
+document/
+
+# local file
+.env*
+!.env.example
+
+# Claude Code
+CLAUDE.md
+.claude/

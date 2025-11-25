@@ -1,0 +1,25 @@
+# Git
+.git
+.gitignore
+
+# Node.js
+node_modules
+npm-debug.log
+
+# Build output
+dist
+coverage
+
+# Development
+.vscode
+.env
+.env.example
+README.md
+
+# Docker
+Dockerfile
+
+# Test files
+**/test
+**/*.test.ts
+jest.config.js

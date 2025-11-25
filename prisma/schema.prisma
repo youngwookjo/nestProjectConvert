@@ -1,0 +1,294 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Grade {
+  id        String   @id @default(cuid())
+  name      String
+  rate      Int
+  minAmount Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users User[]
+
+  @@map("grades")
+}
+
+model User {
+  id          String   @id @default(cuid())
+  gradeId     String
+  name        String   @unique
+  email       String   @unique
+  password    String
+  type        UserType
+  points      Int      @default(0)
+  image       String?
+  totalAmount Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  grade          Grade          @relation(fields: [gradeId], references: [id], onDelete: Restrict)
+  stores         Store[]
+  orders         Order[]
+  cart           Cart?
+  reviews        Review[]
+  inquiries      Inquiry[]
+  notifications  Notification[]
+  storeLikes     StoreLike[]
+  inquiryReplies InquiryReply[]
+
+  @@map("users")
+}
+
+enum UserType {
+  BUYER
+  SELLER
+}
+
+model Store {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  name          String   @unique
+  address       String
+  detailAddress String?
+  phoneNumber   String   @unique
+  content       String
+  image         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  products   Product[]
+  storeLikes StoreLike[]
+
+  @@map("stores")
+}
+
+model StoreLike {
+  id        String   @id @default(cuid())
+  storeId   String
+  userId    String
+  createdAt DateTime @default(now())
+
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([storeId, userId])
+  @@map("store_likes")
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products Product[]
+
+  @@map("categories")
+}
+
+model Size {
+  id Int    @id
+  en String @unique
+  ko String @unique
+
+  stocks     Stock[]
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+
+  @@map("sizes")
+}
+
+model Product {
+  id                String    @id @default(cuid())
+  storeId           String
+  categoryId        String
+  name              String
+  content           String
+  image             String?
+  price             Int
+  discountPrice     Int?
+  discountRate      Int       @default(0)
+  discountStartTime DateTime?
+  discountEndTime   DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  store      Store       @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  category   Category    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  stocks     Stock[]
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+  reviews    Review[]
+  inquiries  Inquiry[]
+
+  @@map("products")
+}
+
+model Stock {
+  id        String @id @default(cuid())
+  productId String
+  sizeId    Int
+  quantity  Int
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  size    Size    @relation(fields: [sizeId], references: [id], onDelete: Restrict)
+
+  @@unique([productId, sizeId])
+  @@map("stocks")
+}
+
+model Cart {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  productId String
+  sizeId    Int
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  size    Size    @relation(fields: [sizeId], references: [id], onDelete: Restrict)
+
+  @@unique([cartId, productId, sizeId])
+  @@map("cart_items")
+}
+
+model Order {
+  id            String   @id @default(cuid())
+  userId        String
+  name          String
+  address       String
+  phoneNumber   String
+  subtotal      Int
+  totalQuantity Int
+  usePoint      Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items    OrderItem[]
+  payments Payment[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id         String   @id @default(cuid())
+  orderId    String
+  productId  String
+  sizeId     Int
+  price      Int
+  quantity   Int
+  isReviewed Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  order   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  size    Size     @relation(fields: [sizeId], references: [id], onDelete: Restrict)
+  reviews Review[]
+
+  @@map("order_items")
+}
+
+model Payment {
+  id        String   @id @default(cuid())
+  orderId   String
+  price     Int
+  status    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+model Review {
+  id          String   @id @default(cuid())
+  userId      String
+  productId   String
+  orderItemId String
+  content     String
+  rating      Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderItem OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, orderItemId])
+  @@map("reviews")
+}
+
+model Inquiry {
+  id        String        @id @default(cuid())
+  userId    String
+  productId String
+  title     String
+  content   String
+  status    InquiryStatus @default(WAITING_ANSWER)
+  isSecret  Boolean       @default(false)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  reply   InquiryReply?
+
+  @@map("inquiries")
+}
+
+enum InquiryStatus {
+  WAITING_ANSWER
+  COMPLETED_ANSWER
+}
+
+model InquiryReply {
+  id        String   @id @default(cuid())
+  inquiryId String   @unique
+  userId    String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  inquiry Inquiry @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("inquiry_replies")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  content   String
+  isChecked Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
