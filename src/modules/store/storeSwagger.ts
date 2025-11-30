@@ -179,6 +179,10 @@
  *                   isSoldOut:
  *                     type: boolean
  *                     description: 품절 여부
+ *                   image:
+ *                     type: string
+ *                     nullable: true
+ *                     description: 상품 대표 이미지 URL
  *                   totalCount:
  *                     type: integer
  *                     description: 전체 상품 수
